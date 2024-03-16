@@ -1,0 +1,8 @@
+# base prettier config
+
+# https://prettier.io/docs/en/configuration.html
+
+trailingComma: es5
+tabWidth: 4
+semi: false
+singleQuote: true
