@@ -3,6 +3,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpException,
+  HttpStatus,
   Param,
   Post,
   Put,
@@ -17,8 +19,12 @@ export class UserController {
 
   @Get('')
   async findAll() {
-    const users = await this.userService.findAll();
-    return users;
+    try {
+      const users = await this.userService.findAll();
+      return users;
+    } catch (error) {
+      throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
+    }
   }
 
   @Get('/:name')
