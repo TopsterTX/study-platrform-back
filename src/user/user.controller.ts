@@ -3,27 +3,36 @@ import {
   Controller,
   Delete,
   Get,
+  HttpException,
+  HttpStatus,
   Param,
   Post,
   Put,
+  Query,
+  UseGuards,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { UserService } from 'user/user.service';
-import { CreateUserType } from '../types/user';
+import { CreateUserType, FindAllQueryParams } from '@/types/user';
+import { AuthGuard } from '@/guards';
+import { UserService } from './user.service';
 
+@UseGuards(new AuthGuard())
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get('')
-  async findAll() {
-    const users = await this.userService.findAll();
+  async findAll(@Query() query: FindAllQueryParams) {
+    const users = await this.userService.findAll(query);
     return users;
   }
 
-  @Get('/:name')
-  async findById(@Param('name') name: string) {
-    const user = await this.userService.findByName(name);
+  @Get('/:id')
+  async findById(@Param('id') id: string) {
+    const user = await this.userService.findById(id);
+    if (!user) {
+      throw new HttpException('user is not defined', HttpStatus.BAD_REQUEST);
+    }
     return user;
   }
 
