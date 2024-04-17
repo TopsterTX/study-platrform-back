@@ -1,12 +1,7 @@
-import { Role } from './role';
+import { User } from '@prisma/client';
 
-export type UserType = {
-  id: string;
-  name: string;
-  email: string;
+export type CreateUserType = Omit<User, 'hashPassword' | 'id'> & {
   password: string;
-  hashPassword: string;
-  role: Role;
 };
 
-export type CreateUserType = Omit<UserType, 'hashPassword' | 'id'>;
+export type FindAllQueryParams = Partial<User>;
