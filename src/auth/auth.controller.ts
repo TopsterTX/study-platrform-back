@@ -1,13 +1,18 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
+import { SignInBodyType, SignUpBodyType } from '@/types';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post('login')
-  login(@Body() body: { email: string; password: string }) {
-    const { email, password } = body;
-    return this.authService.login(email, password);
+  @Post('signin')
+  login(@Body() body: SignInBodyType) {
+    return this.authService.signIn(body);
+  }
+
+  @Post('signup')
+  registration(@Body() body: SignUpBodyType) {
+    return this.authService.signUp(body);
   }
 }
