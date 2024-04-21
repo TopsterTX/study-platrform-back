@@ -4,7 +4,6 @@ import { Injectable } from '@nestjs/common';
 import { Prisma, User } from '@prisma/client';
 import { CreateUserType, FindAllQueryParams } from '@/types/user';
 import { PrismaService } from '@/prisma.service';
-import { mappingCreateUserData } from '@/utils/user/mappingCreateUserData';
 
 @Injectable()
 export class UserService {
@@ -35,10 +34,12 @@ export class UserService {
   }
 
   async create(body: CreateUserType): Promise<User> {
-    const { password } = body;
     const salt = await bcrypt.genSalt();
 
-    const data = await mappingCreateUserData(body);
+    const data = {
+      id: uuidv4(),
+      ...body,
+    };
 
     return this.prismaService.user.create({ data });
   }
