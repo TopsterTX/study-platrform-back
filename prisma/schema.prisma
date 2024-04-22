@@ -25,4 +25,5 @@ model User {
   email        String @unique
   hashPassword String
   role         String
+  secret       String
 }

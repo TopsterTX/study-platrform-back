@@ -1,6 +1,10 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, Put } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { SignInBodyType, SignUpBodyType } from '@/types';
+import {
+  ChangePasswordBodyType,
+  SignInBodyType,
+  SignUpBodyType,
+} from '@/types';
 
 @Controller('auth')
 export class AuthController {
@@ -14,5 +18,10 @@ export class AuthController {
   @Post('signup')
   registration(@Body() body: SignUpBodyType) {
     return this.authService.signUp(body);
+  }
+
+  @Put('change')
+  changePassword(@Body() body: ChangePasswordBodyType) {
+    return this.authService.changePassword(body);
   }
 }

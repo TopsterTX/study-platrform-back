@@ -12,7 +12,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { CreateUserType, FindAllQueryParams } from '@/types/user';
+import { CreateUserType, FindAllQueryParams } from '@/types';
 import { AuthGuard } from '@/guards';
 import { UserService } from './user.service';
 
