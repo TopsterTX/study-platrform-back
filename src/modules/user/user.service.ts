@@ -10,17 +10,17 @@ export class UserService {
   constructor(private prismaService: PrismaService) {}
 
   async findAll({
-    name,
     id,
+    name,
     role,
     email,
   }: FindAllQueryParams): Promise<User[]> {
     return this.prismaService.user.findMany({
       where: {
-        name,
         id,
-        role: role?.toUpperCase(),
         email,
+        name,
+        role: role?.toUpperCase(),
       },
     });
   }

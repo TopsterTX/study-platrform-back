@@ -8,3 +8,10 @@ export type SignInBodyType = {
 export type SignUpBodyType = Omit<CreateUserType, 'hashPassword' | 'role'> & {
   password: string;
 };
+
+export type ChangePasswordBodyType = Pick<
+  CreateUserType,
+  'email' | 'secret'
+> & {
+  password: string;
+};
