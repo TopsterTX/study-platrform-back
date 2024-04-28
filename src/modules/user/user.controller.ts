@@ -15,11 +15,15 @@ import { Prisma } from '@prisma/client';
 import { CreateUserType, FindAllQueryParams } from '@/types';
 import { AuthGuard } from '@/guards';
 import { UserService } from './user.service';
+import { JwtService } from '@nestjs/jwt';
 
-@UseGuards(new AuthGuard())
+@UseGuards(AuthGuard)
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly jwtService: JwtService,
+  ) {}
 
   @Get('')
   async findAll(@Query() query: FindAllQueryParams) {

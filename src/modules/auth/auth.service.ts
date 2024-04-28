@@ -8,14 +8,14 @@ import {
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
-import { UserService } from '@/user';
+import { UserService } from 'src/modules/user';
 import {
   SignInBodyType,
   SignUpBodyType,
   Role,
   ChangePasswordBodyType,
 } from '@/types';
-import { mappingCreateUserData } from '@/utils';
+import { mappingCreateUserData } from 'src/utils';
 
 @Injectable()
 export class AuthService {
