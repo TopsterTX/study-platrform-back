@@ -1,4 +1,4 @@
-import { CreateUserType } from '@/types/user';
+import { CreateUserType, Role } from '@/modules';
 
 export type SignInBodyType = {
   email: string;
@@ -7,6 +7,7 @@ export type SignInBodyType = {
 
 export type SignUpBodyType = Omit<CreateUserType, 'hashPassword' | 'role'> & {
   password: string;
+  role: Role;
 };
 
 export type ChangePasswordBodyType = Pick<

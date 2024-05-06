@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { Prisma } from '@prisma/client';
-import { Role, SignUpBodyType } from '@/types';
+import { Role, SignUpBodyType } from '@/modules';
 
 export const mappingCreateUserData = (
   data: SignUpBodyType,

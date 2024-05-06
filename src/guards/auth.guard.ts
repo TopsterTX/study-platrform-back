@@ -7,6 +7,7 @@ import {
 import { Observable } from 'rxjs';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
+import { CustomRequest } from '@/types';
 
 const INVALID_TOKEN_AUTHORIZATION_TEXT = 'invalid_authorization_header';
 
@@ -14,7 +15,7 @@ const INVALID_TOKEN_AUTHORIZATION_TEXT = 'invalid_authorization_header';
 export class AuthGuard implements CanActivate {
   constructor(private readonly jwtService: JwtService) {}
 
-  protected getToken(request: Request): string {
+  protected getToken(request: CustomRequest): string {
     const headers = new Headers(request.headers);
     const authorization = headers.get('authorization');
     if (
@@ -40,12 +41,10 @@ export class AuthGuard implements CanActivate {
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
     const ctx = context.switchToHttp();
-    const request = ctx.getRequest<Request>();
+    const request = ctx.getRequest<CustomRequest>();
     const token = this.getToken(request);
     const user = this.verifyToken(token);
-    // @ts-ignore
     request.user = user;
-
     return true;
   }
 }

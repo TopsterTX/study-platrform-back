@@ -1,20 +1,18 @@
 import {
   BadRequestException,
-  HttpException,
-  HttpStatus,
   Injectable,
   InternalServerErrorException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
-import { UserService } from 'src/modules/user';
+import { UserService } from '@/modules/user/user.service';
 import {
   SignInBodyType,
   SignUpBodyType,
   Role,
   ChangePasswordBodyType,
-} from '@/types';
+} from '@/modules';
 import { mappingCreateUserData } from 'src/utils';
 
 @Injectable()
@@ -36,7 +34,7 @@ export class AuthService {
       throw new BadRequestException('not_valid_credentials');
     }
 
-    const payload = { user };
+    const payload = user;
     const token = await this.jwtService.signAsync(payload);
 
     return {
@@ -53,9 +51,7 @@ export class AuthService {
   }
 
   async signUp(body: SignUpBodyType) {
-    const { password, email, name } = body;
-
-    const role: Role = 'USER';
+    const { password, email, role } = body;
 
     const users: User[] = await this.userService.findAll({ email });
     if (users?.length) {
