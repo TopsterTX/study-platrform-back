@@ -1,10 +1,10 @@
 import { Body, Controller, HttpCode, Post, Put } from '@nestjs/common';
-import { AuthService } from './auth.service';
 import {
   ChangePasswordBodyType,
   SignInBodyType,
   SignUpBodyType,
-} from '@/types';
+} from '@/modules';
+import { AuthService } from './auth.service';
 
 @Controller('auth')
 export class AuthController {
@@ -16,7 +16,7 @@ export class AuthController {
     return this.authService.signIn(body);
   }
 
-  @HttpCode(200)
+  @HttpCode(201)
   @Post('signup')
   registration(@Body() body: SignUpBodyType) {
     return this.authService.signUp(body);
