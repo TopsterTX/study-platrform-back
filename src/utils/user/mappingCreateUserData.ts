@@ -4,7 +4,7 @@ import { Role, SignUpBodyType } from '@/modules';
 
 export const mappingCreateUserData = (
   data: SignUpBodyType,
-  { role, hashPassword }: { role: Role; hashPassword: string },
+  { role = 'USER', hashPassword }: { role: Role; hashPassword: string },
 ): Prisma.UserCreateInput => {
   const { email, name, password: _password, ...rest } = data;
   return {

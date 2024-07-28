@@ -14,17 +14,13 @@ import {
 import { Prisma } from '@prisma/client';
 import { CreateUserType, FindAllQueryParams } from '@/modules';
 import { AuthGuard, RolesGuard } from '@/guards';
-import { JwtService } from '@nestjs/jwt';
 import { UserService } from './user.service';
 import { Roles } from '@/decorators';
 
 @UseGuards(AuthGuard, RolesGuard)
 @Controller('user')
 export class UserController {
-  constructor(
-    private readonly userService: UserService,
-    private readonly jwtService: JwtService,
-  ) {}
+  constructor(private readonly userService: UserService) {}
 
   @Roles(['ADMIN'])
   @Get('')
