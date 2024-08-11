@@ -1,4 +1,12 @@
-import { Body, Controller, HttpCode, Post, Put, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  Post,
+  Put,
+  Req,
+  Res,
+} from '@nestjs/common';
 import { Response } from 'express';
 import {
   ChangePasswordBodyType,
@@ -6,6 +14,7 @@ import {
   SignUpBodyType,
 } from '@/modules';
 import { AuthService } from './auth.service';
+import { CustomRequest } from '@/types';
 
 @Controller('auth')
 export class AuthController {
@@ -32,5 +41,20 @@ export class AuthController {
   @Put('change')
   changePassword(@Body() body: ChangePasswordBodyType) {
     return this.authService.changePassword(body);
+  }
+
+  @HttpCode(200)
+  @Post('refresh')
+  refreshToken(
+    @Req() request: CustomRequest,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    return this.authService.refreshToken(request, response);
+  }
+
+  @HttpCode(200)
+  @Post('logout')
+  logout(@Res({ passthrough: true }) response: Response) {
+    return this.authService.logout(response);
   }
 }

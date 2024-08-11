@@ -1,7 +1,10 @@
 import {
   BadRequestException,
+  HttpException,
+  HttpStatus,
   Injectable,
   InternalServerErrorException,
+  NotAcceptableException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
@@ -12,8 +15,13 @@ import {
   SignUpBodyType,
   ChangePasswordBodyType,
 } from '@/modules';
-import { mappingCreateUserData } from 'src/utils';
+import {
+  defaultResponse,
+  mappingCreateUserData,
+  TokenDecoder,
+} from 'src/utils';
 import { Response } from 'express';
+import { CustomRequest } from '@/types';
 
 @Injectable()
 export class AuthService {
@@ -27,19 +35,43 @@ export class AuthService {
     return await bcrypt.hash(password, salt);
   }
 
-  async createAccessToken(password: string, user: User, response: Response) {
-    const isMatchPassword = await bcrypt.compare(password, user?.hashPassword);
-
-    if (!isMatchPassword || !user) {
-      throw new BadRequestException('not_valid_credentials');
+  async isMatchPassword(password: string, hashPassword: string) {
+    try {
+      return await bcrypt.compare(password, hashPassword);
+    } catch (_) {
+      throw new BadRequestException('compare_password_error');
     }
+  }
 
-    const payload = user;
-    const token = await this.jwtService.signAsync(payload);
+  async isExpiredToken(token: string) {
+    try {
+      const verifiedToken = await this.jwtService.verify(token);
+      return Boolean(new Date(verifiedToken.exp * 1000) < new Date());
+    } catch (_) {
+      throw new BadRequestException('verify_token_error');
+    }
+  }
 
-    response.cookie('access_token', token, {
+  async createAccessRefreshToken(user: User, response: Response) {
+    const payload = {
+      id: user.id,
+      role: user.role,
+    };
+    const accessToken = await this.jwtService.signAsync(payload, {
+      expiresIn: '1h',
+    });
+    const refreshToken = await this.jwtService.signAsync(payload, {
+      expiresIn: '1w',
+    });
+
+    response.cookie('access_token', accessToken, {
       httpOnly: true,
     });
+    response.cookie('refresh_token', refreshToken, {
+      httpOnly: true,
+    });
+
+    return defaultResponse(true);
   }
 
   async signIn(body: SignInBodyType, response: Response) {
@@ -47,7 +79,10 @@ export class AuthService {
     const users: User[] = await this.userService.findAll({ email });
     const currentUser = users?.[0] ?? null;
 
-    return this.createAccessToken(password, currentUser, response);
+    if (!(await this.isMatchPassword(password, currentUser.hashPassword))) {
+      throw new BadRequestException('not_valid_credentials');
+    }
+    return this.createAccessRefreshToken(currentUser, response);
   }
 
   async signUp(body: SignUpBodyType, response: Response) {
@@ -75,7 +110,7 @@ export class AuthService {
       throw new InternalServerErrorException('user_not_created');
     }
 
-    return this.createAccessToken(body.password, newUser, response);
+    return this.createAccessRefreshToken(newUser, response);
   }
 
   async changePassword(body: ChangePasswordBodyType) {
@@ -94,8 +129,31 @@ export class AuthService {
 
     const newHashPassword = await this.getHashPassword(newPassword);
 
-    return await this.userService.update(currentUser.id, {
+    const { id } = await this.userService.update(currentUser.id, {
       hashPassword: newHashPassword,
     });
+
+    if (!id) {
+      throw new BadRequestException('user_not_updated');
+    }
+
+    return defaultResponse(Boolean(id));
+  }
+
+  async refreshToken(request: CustomRequest, response: Response) {
+    const refreshToken = TokenDecoder.getRawTokenFromCookie(
+      request.cookies.refresh_token,
+    );
+
+    if (await this.isExpiredToken(refreshToken)) {
+      throw new NotAcceptableException('token_expired');
+    }
+    return this.createAccessRefreshToken(request.user, response);
+  }
+
+  async logout(response: Response) {
+    response.clearCookie('access_token');
+    response.clearCookie('refresh_token');
+    return defaultResponse(true);
   }
 }

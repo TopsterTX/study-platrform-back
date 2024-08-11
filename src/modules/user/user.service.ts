@@ -1,13 +1,22 @@
 import { v4 as uuidv4 } from 'uuid';
-import * as bcrypt from 'bcrypt';
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotAcceptableException,
+} from '@nestjs/common';
 import { PrismaService } from '@/prisma.service';
 import { CreateUserType, FindAllQueryParams } from './types';
 import { User, Prisma } from '@prisma/client';
+import { TokenDecoder } from '@/utils';
+import { CustomRequest } from '@/types';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class UserService {
-  constructor(private prismaService: PrismaService) {}
+  constructor(
+    private prismaService: PrismaService,
+    private jwtService: JwtService,
+  ) {}
 
   async findAll({
     id,
@@ -25,17 +34,34 @@ export class UserService {
     });
   }
 
+  async getData(request: CustomRequest): Promise<User> {
+    const token = request.cookies['access_token'];
+    const { id } = await this.jwtService.decode(token);
+    if (!id) {
+      throw new NotAcceptableException('user is not defined');
+    }
+    const user = await this.findById(id);
+    if (!user) {
+      throw new BadRequestException('user is not defined');
+    }
+    return user;
+  }
+
   async findById(id: string): Promise<User> {
-    return this.prismaService.user.findUnique({
+    const user = this.prismaService.user.findUnique({
       where: {
         id,
       },
     });
+
+    if (!user) {
+      throw new BadRequestException('user is not defined');
+    }
+
+    return user;
   }
 
   async create(body: CreateUserType): Promise<User> {
-    const salt = await bcrypt.genSalt();
-
     const data = {
       id: uuidv4(),
       ...body,

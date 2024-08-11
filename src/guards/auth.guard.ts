@@ -16,17 +16,12 @@ export class AuthGuard implements CanActivate {
   constructor(private readonly jwtService: JwtService) {}
 
   protected getToken(request: CustomRequest): string {
-    const headers = new Headers(request.headers);
-    const authorization = headers.get('authorization');
-    if (
-      !authorization ||
-      !authorization.includes('Bearer') ||
-      Array.isArray(authorization)
-    ) {
+    const cookies = request.cookies;
+    const accessTokenCookie = cookies['access_token'];
+    if (!accessTokenCookie) {
       throw new UnauthorizedException(INVALID_TOKEN_AUTHORIZATION_TEXT);
     }
-    const [_type, token] = authorization.split(' ');
-    return token;
+    return accessTokenCookie;
   }
 
   protected verifyToken(token: string): User {
@@ -43,8 +38,8 @@ export class AuthGuard implements CanActivate {
     const ctx = context.switchToHttp();
     const request = ctx.getRequest<CustomRequest>();
     const token = this.getToken(request);
-    const user = this.verifyToken(token);
-    request.user = user;
+    request.user = this.verifyToken(token);
+
     return true;
   }
 }
